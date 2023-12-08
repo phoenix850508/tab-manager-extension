@@ -8,18 +8,23 @@
   </head>
   <body>
     <template id="li_template">
-      <li>
-        <a>
-          <h3 class="title">Tab Title</h3>
-          <p class="pathname">Tab Pathname</p>
-        </a>
+      <li draggable="true">
+        <div class="">
+          <div class="divWrapper">
+            <img class="favIcon" src="" alt="">
+            <div class="textWrapper">
+              <span class="title">Tab Title</span>
+              <div class="url">Tab Url</div>
+            </div>
+          </div>
+        </div>
       </li>
     </template>
-
-    <h1>Google Dev Docs</h1>
-    <button>Group Tabs</button>
-    <ul></ul>
-
-    <script src="./popup.js" type="module"></script>
+    <div class="add-group">
+      <span class="add-sign">+ </span>
+      <span class="add-text">drag here to add group</span>
+    </div>
+    <ul class="default-ul"></ul>
+    <script src="./popup.js"></script>
   </body>
 </html>

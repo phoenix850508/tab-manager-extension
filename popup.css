@@ -1,0 +1,96 @@
+body {
+  width: 20rem;
+  background: #333;
+}
+
+ul {
+  max-height: 10rem;
+  list-style-type: none;
+  padding-inline-start: 0;
+}
+
+li {
+  cursor: pointer;
+  background: #ffffff;
+  overflow-x: hidden;
+  background-color: #333;
+}
+
+h3,
+p {
+  margin: 0;
+}
+
+hr {
+  background-color: white;
+}
+
+.divWrapper {
+  height: 2.6rem;
+  padding: .2rem;
+  width: 100%;
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+
+.divWrapper:hover {
+  background: #808080;
+}
+
+.textWrapper {
+  width: 100%;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  font-size: .85rem;
+  text-overflow: ellipsis;
+  color: #fff;
+}
+
+.url {
+  color: #C0C0C0;
+}
+
+.favIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.add-group {
+  box-sizing: border-box;
+  width: 100%;
+  padding: .6rem;
+  color: #8C8C8C;
+  cursor:default;
+  font-weight: 500;
+}
+
+.drag-over {
+  color: #fff;
+  border: 1px dotted #fff;
+}
+
+.drag-over >.add-text {
+  display: inline;
+}
+
+.add-sign {
+  font-size: 1.2rem;
+}
+
+.add-text {
+  display: none;
+  font-size: .9rem;
+}
+
+.add-group:hover {
+  color: white;
+}
+
+.add-group:hover >.add-text {
+  display: inline;
+}

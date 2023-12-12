@@ -4,7 +4,7 @@
 [tab-manager-extension demo](https://www.youtube.com/watch?v=WanoYkFUzD0)
 
 ## Description
-The tag-manager-extension includes a image folder and 6 files. These files are consist of HTML, CSS, JavaScript, README and a json file. The manifest.json file is to let the browser know that this directory is a browser extension, of which indicates default html file, service worker file, and the information which the extension will be granted access to.
+The tag-manager-extension includes a image folder and 6 files. These files are consist of HTML, CSS, JavaScript, README and a json file. The manifest.json file is to let the browser know that this directory is a browser extension, of which indicates default html file, service worker file, and the information that the extension will be granted access to.
 
 The HTML file shows the default content of all the tabs opened in Chrome, in which 2 .js files come to effect. With the help of background.js, it is a service worker that is constantly mintoring if there's any tab were created/removed/attached/detached/replaced. If there's any tab-related movement in the background, it will update the information to Chrome's local storage. And popup.js will then take into action, to retrieve the most up to date tab information, so the popup window can show the latest tab information as a list.
 

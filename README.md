@@ -21,6 +21,6 @@ If you have completed above steps, you should be able to use Tab Manager Extensi
 
 ## Shoutouts
 The extension icon is from [icon8](https://icons8.com/), and the idea is brainstormed after seeing The [Great Marvellous Suspender](https://chromewebstore.google.com/detail/the-marvellous-suspender/noogafoofpebimajpfpamcfhoaifemoa),
-which is also solving problems if people having the habit of opening many Chrome tabs.
+which is also solving problems when people having the habit of opening many Chrome tabs.
 
 

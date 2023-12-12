@@ -1,5 +1,4 @@
 # tab-manager-extension
-ç
 
 ## Installation to local environment
 1. Find a folder where you want to download this project, open Terminal, and run the command for cloning:<br>

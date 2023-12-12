@@ -2,6 +2,9 @@ function updateTabList() {
   // update the list of all tabs
   chrome.tabs.query({}, (tabs) => {
     const tabList = tabs.map((tab) => {
+      // change groupId setting to allow using querySelector
+      let groupId = tab.groupId;
+      groupId = "g" + groupId;
       return {
         windowId: tab.windowId,
         id: tab.id,
@@ -9,12 +12,10 @@ function updateTabList() {
         title: tab.title,
         isActiveTab: tab.active,
         favIconUrl: tab.favIconUrl,
-        groupId: tab.groupId,
+        groupId: groupId,
       };
     });
-    chrome.storage.local.set({ tabList }).then(() => {
-      console.log("tabList is set");
-    });
+    chrome.storage.local.set({ tabList });
   });
 }
 

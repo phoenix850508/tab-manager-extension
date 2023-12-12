@@ -1,54 +1,157 @@
 const template = document.querySelector("#li_template");
 const defaultUl = document.querySelector(".default-ul");
 const addGroup = document.querySelector(".add-group");
+const container = document.querySelector(".container");
 const defaultIcon =
   "https://cdn.iconscout.com/icon/free/png-512/free-webpage-window-layout-design-blog-browser-web-2-22114.png?f=webp&w=512";
 
 // from chrome local storage get tablist for the initial render
 chrome.storage.local.get(["tabList"], (result) => {
   const tabs = result.tabList;
+  const length = tabs.length;
   // initial render
   for (const tab of tabs) {
     // create element from template
     const element = template.content.firstElementChild.cloneNode(true);
     const newElement = makeTabElement(element, tab);
-    // if the tab has a group
-    if (tab.groupId !== -1) {
+    const ulArray = document.querySelectorAll("ul");
+    let isGroupExists = false;
+    // if the tab belongs to a group
+    if (tab.groupId !== "g-1") {
+      // organize into the same group if group existed
+      ulArray.forEach((ul) => {
+        if (ul.className === tab.groupId) {
+          isGroupExists = true;
+          const classStr = `.${ul.className}`;
+          const existUl = document.querySelector(classStr);
+          existUl.appendChild(newElement);
+        }
+      });
       // insert into a newly created ul
-      // 整理同一個group的功能
-      insertIntoNewUl(newElement, tab.groupId);
+      if (!isGroupExists) {
+        insertIntoNewUl(newElement, tab.groupId);
+      }
       continue;
     }
+    // if the tab does not belong to any group
     defaultUl.append(newElement);
   }
 });
 
 // click event to switch
-defaultUl.addEventListener("click", (e) => {
-  switchTab(e.target);
+container.addEventListener("click", (e) => {
+  const switchTarget = e.target.closest("li");
+  // error handling
+  if (!switchTarget) return;
+  switchTab(switchTarget);
 });
 
-// drag item event from default ul
-defaultUl.addEventListener("dragstart", (e) => {
-  let selected = e.target;
-  // if not selecting an list item, then return
-  if (selected.tagName !== "LI") return;
-  // while draggin on the add-group area
-  addGroup.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    // add CSS to the add-group area
-    addGroup.classList.add("drag-over");
-  });
+let selected = null;
+let startingPoint = null;
+let selectedTabId = null;
 
-  // while drop at add-group
-  addGroup.addEventListener("drop", async (e) => {
+container.addEventListener("dragstart", (e) => {
+  selected = e.target.tagName === "LI" ? e.target : e.target.closest("li");
+  startingPoint = e.target.closest("ul");
+  selectedTabId = selected.firstElementChild.className;
+  // error handling
+  if (!startingPoint) {
+    selected = "";
+    startingPoint = null;
+    selectedTabId = null;
+    return;
+  }
+});
+
+// while dragging on the add-group area
+addGroup.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  // add CSS to the add-group area
+  addGroup.classList.add("drag-over");
+});
+
+container.addEventListener("dragover", (e) => {
+  e.preventDefault();
+});
+
+// drop at areas other than add-group
+container.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  const divClassList = e.target.closest("div");
+  // from default-ul to the add-group area
+  if (divClassList && divClassList.classList[0] === "add-group") {
+    // error handling
+    if (startingPoint.className !== "default-ul") {
+      selected = "";
+      startingPoint = null;
+      selectedTabId = null;
+      return;
+    }
     // add the grouping to chrome local storage
     const selectedTabId = selected.firstElementChild.className;
-    const groupId = await groupTabs([parseInt(selectedTabId)]);
+    let groupId = await groupTabs([parseInt(selectedTabId)]);
+    groupId = "g" + groupId;
     // insert the tab into new ul
     insertIntoNewUl(selected, groupId);
-    selected = null;
-  });
+    selected = "";
+    startingPoint = null;
+    selectedTabId = null;
+    return;
+  }
+
+  const destination = e.target.closest("ul");
+  // error handling
+  if (
+    !destination ||
+    (destination && destination.className === startingPoint.className)
+  ) {
+    selected = "";
+    startingPoint = null;
+    selectedTabId = null;
+    return;
+  }
+
+  // from a grouped ul to default-ul
+  if (
+    startingPoint.tagName === "UL" &&
+    destination.className === "default-ul"
+  ) {
+    defaultUl.append(selected);
+    chrome.tabs.ungroup([parseInt(selectedTabId)]);
+    if (startingPoint.children.length === 0) {
+      startingPoint.nextSibling.remove();
+      startingPoint.remove();
+    }
+  }
+  // from default-ul to a grouped ul
+  else if (
+    startingPoint.className === "default-ul" &&
+    destination.tagName === "UL"
+  ) {
+    const groupId = destination.className;
+    groupTabs([parseInt(selectedTabId)], parseInt(groupId.slice(1)));
+    destination.append(selected);
+  }
+  // from a grouped ul to another grouped ul
+  else if (
+    startingPoint.tagName === "UL" &&
+    startingPoint.className !== "default-ul" &&
+    destination.tagName === "UL"
+  ) {
+    chrome.tabs.ungroup([parseInt(selectedTabId)]);
+    let destiGp = destination.className;
+    groupTabs([parseInt(selectedTabId)], parseInt(destiGp.slice(1)));
+    destination.append(selected);
+    // remove grouped ul if it's empty
+    if (startingPoint.children.length === 0) {
+      startingPoint.nextSibling.remove();
+      startingPoint.remove();
+    }
+  }
+  selected = "";
+  startingPoint = null;
+  selectedTabId = null;
+  return;
 });
 
 // done drag event from default ul
@@ -56,33 +159,10 @@ defaultUl.addEventListener("dragend", (e) => {
   addGroup.classList.remove("drag-over");
 });
 
-// drag item from default-ul to the a grouped ul
-document.addEventListener("dragstart", (e) => {
-  let selected = e.target;
-  const selectedTabId = selected.firstElementChild.className;
-  // if selecting is not an list item, then return
-  if (selected.tagName !== "LI") return;
-  document.addEventListener("dragover", (e) => {
-    e.preventDefault();
-  });
-  document.addEventListener("drop", (e) => {
-    const destination = e.target.closest("ul");
-    // if the destination is default-ul, return
-    if (destination && destination.className === "default-ul") return;
-    const groupId = destination.className;
-    groupTabs([parseInt(selectedTabId)], parseInt(groupId));
-    destination.append(selected);
-    selected = null;
-    // 加入移出group功能
-  });
-});
-
 function switchTab(node) {
   const tabId = parseInt(node.closest("li").firstElementChild.className);
   // switch tab
-  chrome.tabs.update(tabId, { active: true }, (tab) => {
-    console.log("tab switched");
-  });
+  chrome.tabs.update(tabId, { active: true });
 }
 
 function makeTabElement(templateEle, tabObj) {
@@ -99,10 +179,8 @@ function insertIntoNewUl(selectedTab, groupID) {
     defaultUl,
   );
   groupedUl.appendChild(selectedTab);
-  defaultUl.parentElement.insertBefore(
-    document.createElement("hr"),
-    groupedUl.nextSibling,
-  );
+  const hr = document.createElement("hr");
+  defaultUl.parentElement.insertBefore(hr, groupedUl.nextSibling);
   groupedUl.className = groupID;
 }
 
